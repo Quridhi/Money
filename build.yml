@@ -1,0 +1,42 @@
+name: Kivy/KivyMD to APK Build (Buildozer)
+
+# تحديد متى يتم تشغيل هذا الـ Workflow
+on:
+  push:
+    branches: [ main ] # قم بالبناء عند الرفع على فرع main فقط
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build_apk:
+    # تحديد نظام التشغيل الذي سيتم عليه البناء (Ubuntu)
+    runs-on: ubuntu-latest
+
+    steps:
+    # الخطوة 1: جلب كود المشروع من GitHub
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    # الخطوة 2: تثبيت Buildozer والاعتماديات الأساسية
+    # يُستخدم هذا الأمر لتثبيت Buildozer ونسخة Cython المتوافقة
+    - name: Install Buildozer and Dependencies
+      run: |
+        pip install buildozer
+        pip install Cython==0.29.33
+
+    # الخطوة 3: بدء عملية البناء
+    # يتم استخدام مستوى سجل مفصل (loglevel 2) لتسهيل تصحيح الأخطاء
+    - name: Run Buildozer (android debug)
+      run: buildozer android debug --loglevel 2
+
+    # الخطوة 4: رفع ملف APK الناتج
+    # يتم حفظ ملف APK كـ artifact ليمكن للمستخدم تنزيله من صفحة Actions
+    - name: Upload APK Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: KivyMD-APK-Package
+        path: bin/*.apk # المسار الافتراضي لملف APK الناتج
+
+# ملاحظات هامة:
+# 1. تأكد من أن ملف buildozer.spec مُهيأ بشكل صحيح وأن 'requirements' يحتوي على 'kivymd'.
+# 2. يجب أن يكون ملف main.py وملف buildozer.spec في جذر المستودع.
